@@ -12,46 +12,53 @@ const starContainerStyle = {
   alignItems: 'center'
 }
 
-const textStyle = {
-  lineHeight: '1',
-  margin: '0'
-}
-
-export default function StarRating({ maxRating = 5 }) {
-  const [rating, setRating] = useState(0)
+export default function StarRating({ maxRating = 5, defaultRating = 0, onSetRating, color = '#fcc419', hoverColor = '#e9ecef', hoverColorLower = '#fab005', size = 48, className = '', messages = [] }) {
+  const [rating, setRating] = useState(defaultRating)
   const [previewRating, setPreviewRating] = useState(0)
+  const textStyle = {
+    lineHeight: '1',
+    margin: '0',
+    color,
+    fontSize: `${size / 1.5}px`
+  }
+
+  function handleRating(rating) {
+    // input
+    setRating(rating)
+    // output to external callback. Value is acessible outside this component
+    onSetRating(rating)
+  }
 
   function handlePreviewRating(previewRate) {
     setPreviewRating(previewRate)
   }
 
   return (
-    <div style={containerStyle}>
+    <div style={containerStyle} className={className}>
       <div style={starContainerStyle}>
         {Array.from({ length: maxRating }, (_, i) => (
-          <Star key={i} num={i + 1} previewRating={previewRating} rating={rating} onRate={() => setRating(i + 1)} onPreviewRate={handlePreviewRating} />
+          <Star key={i} num={i + 1} previewRating={previewRating} rating={rating} onRate={() => handleRating(i + 1)} onPreviewRate={handlePreviewRating} color={color} hoverColor={hoverColor} hoverColorLower={hoverColorLower} size={size} />
         ))}
       </div>
-      <p style={textStyle}>{previewRating || rating || ''}</p>
+      <p style={textStyle}>{messages.length === maxRating ? messages[(previewRating || rating) - 1] : previewRating || rating || ''}</p>
     </div>
   )
 }
 
-const starStyle = {
-  width: '48px',
-  height: '48px',
-  cursor: 'pointer',
-  strokeWidth: '.7px',
-  stroke: 'rgba(0, 0, 0, .4)'
-}
-
-function Star({ num, previewRating, rating, onRate, onPreviewRate }) {
-  const starColor = '#ffd43b'
-  const starPreviewHigherColor = '#e9ecef'
-  const starPreviewLowerColor = '#fab005'
+function Star({ num, previewRating, rating, onRate, onPreviewRate, color, hoverColor, hoverColorLower, size }) {
+  const starColor = color
+  const starPreviewHigherColor = hoverColor
+  const starPreviewLowerColor = hoverColorLower
   const isFull = num <= rating
   const isPreviewHigher = num <= previewRating
   const isPreviewLower = num <= previewRating && previewRating < rating
+  const starStyle = {
+    width: `${size}px`,
+    height: `${size}px`,
+    cursor: 'pointer',
+    strokeWidth: '.7px',
+    stroke: color //rgba(0, 0, 0, .4)
+  }
 
   let fill
   if (isPreviewLower && isFull) {
