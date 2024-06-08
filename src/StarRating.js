@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 
 /* Outside function component, this is not regenerated every new component render */
 const containerStyle = {
@@ -10,6 +11,16 @@ const containerStyle = {
 const starContainerStyle = {
   display: 'flex',
   alignItems: 'center'
+}
+
+StarRating.propTypes = {
+  maxRating: PropTypes.number,
+  defaultRating: PropTypes.number,
+  color: PropTypes.string,
+  size: PropTypes.number,
+  messages: PropTypes.array,
+  className: PropTypes.string,
+  onSetRating: PropTypes.func
 }
 
 export default function StarRating({ maxRating = 5, defaultRating = 0, onSetRating, color = '#fcc419', hoverColor = '#e9ecef', hoverColorLower = '#fab005', size = 48, className = '', messages = [] }) {
