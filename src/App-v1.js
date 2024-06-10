@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const tempMovieData = [
   {
@@ -44,60 +44,20 @@ const tempWatchedData = [
 
 const average = arr => arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
 
-const KEY = 'bb268ed2'
-
 export default function App() {
-  const [movies, setMovies] = useState([])
-  const [watched, setWatched] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const query = 'matrix'
-
-  function renderMovieList() {
-    if (isLoading) {
-      return <Loader />
-    }
-
-    if (error) {
-      return <ErrorMessage message={error} />
-    }
-
-    return <MovieList movies={movies} />
-  }
-
-  useEffect(() => {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true)
-        const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`)
-
-        if (!res.ok) throw new Error('Something went wong with fetching movies')
-
-        const data = await res.json()
-
-        if (data?.Error) throw new Error(data.Error)
-
-        setMovies(data.Search)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchMovies()
-  }, [])
+  const [movies, setMovies] = useState(tempMovieData)
+  const [watched, setWatched] = useState(tempWatchedData)
 
   return (
     <>
       <NavBar>
-        <Logo key={3} />
+        <Logo />
         <Search />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
         <Box>
-          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
-          {renderMovieList()}
+          <MovieList movies={movies} />
         </Box>
         <Box>
           <WatchedSummary watched={watched} />
@@ -105,18 +65,6 @@ export default function App() {
         </Box>
       </Main>
     </>
-  )
-}
-
-function Loader() {
-  return <p className="loader">Loading...</p>
-}
-
-function ErrorMessage({ message }) {
-  return (
-    <p className="error">
-      <span>💣</span> {message}
-    </p>
   )
 }
 
@@ -142,7 +90,7 @@ function Logo() {
 function NumResults({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies?.length}</strong> results
+      Found <strong>{movies.length}</strong> results
     </p>
   )
 }
