@@ -51,7 +51,7 @@ export default function App() {
   const [watched, setWatched] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const query = 'matrix'
+  const [query, setQuery] = useState('inception')
 
   function renderMovieList() {
     if (isLoading) {
@@ -65,33 +65,54 @@ export default function App() {
     return <MovieList movies={movies} />
   }
 
-  useEffect(() => {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true)
-        const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`)
+  function Reset() {
+    setMovies([])
+    setError('')
+    setIsLoading(false)
+  }
 
-        if (!res.ok) throw new Error('Something went wong with fetching movies')
+  async function fetchMovies() {
+    try {
+      setIsLoading(true)
+      setError('')
 
-        const data = await res.json()
+      const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`)
 
-        if (data?.Error) throw new Error(data.Error)
+      if (!res.ok) throw new Error('Something went wong with fetching movies')
 
-        setMovies(data.Search)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setIsLoading(false)
-      }
+      const data = await res.json()
+
+      if (data?.Error) throw new Error(data.Error)
+
+      setMovies(data.Search)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
     }
-    fetchMovies()
-  }, [])
+  }
+
+  useEffect(() => {
+    if (query.length < 3) {
+      Reset()
+      return
+    }
+    // throttle input onchange calls
+    const timeoutId = setTimeout(() => fetchMovies(), 500)
+
+    //fetchMovies() /* too many requests without delay */
+
+    // clear timeout on unmount
+    return () => clearTimeout(timeoutId)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
   return (
     <>
       <NavBar>
         <Logo key={3} />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -120,9 +141,7 @@ function ErrorMessage({ message }) {
   )
 }
 
-function Search() {
-  const [query, setQuery] = useState('')
-
+function Search({ query, setQuery }) {
   return <input className="search" type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} />
 }
 
@@ -177,7 +196,14 @@ function MovieList({ movies }) {
 function Movie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <img
+        src={movie.Poster === 'N/A' ? 'img/image-not-found.png' : movie.Poster}
+        alt={`${movie.Title} poster`}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null // prevents looping
+          currentTarget.src = 'img/image-not-found.png'
+        }}
+      />
       <h3>{movie.Title}</h3>
       <div>
         <p>
