@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 const containerStyle = {
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '16px'
 }
 
@@ -30,7 +31,8 @@ export default function StarRating({ maxRating = 5, defaultRating = 0, onSetRati
     lineHeight: '1',
     margin: '0',
     color,
-    fontSize: `${size / 1.5}px`
+    fontSize: `${size / 1.5}px`,
+    minWidth: '5%'
   }
 
   function handleRating(rating) {

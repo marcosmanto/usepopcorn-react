@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import StarRating from './StarRating'
 
 const tempMovieData = [
   {
@@ -51,7 +52,8 @@ export default function App() {
   const [watched, setWatched] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [query, setQuery] = useState('inception')
+  const [query, setQuery] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
 
   function renderMovieList() {
     if (isLoading) {
@@ -62,7 +64,15 @@ export default function App() {
       return <ErrorMessage message={error} />
     }
 
-    return <MovieList movies={movies} />
+    return (
+      <MovieList
+        movies={movies}
+        selectedId={selectedId}
+        onSelectMovie={id => {
+          setSelectedId(prev => (id === prev ? null : id))
+        }}
+      />
+    )
   }
 
   function Reset() {
@@ -121,8 +131,14 @@ export default function App() {
           {renderMovieList()}
         </Box>
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedId ? (
+            <MovieDetails selectedId={selectedId} onCloseMovie={() => setSelectedId(null)} key={selectedId} />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
@@ -183,19 +199,19 @@ function Box({ children }) {
   )
 }
 
-function MovieList({ movies }) {
+function MovieList({ movies, selectedId, onSelectMovie }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map(movie => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie movie={movie} key={movie.imdbID} selectedId={selectedId} onSelectMovie={onSelectMovie} />
       ))}
     </ul>
   )
 }
 
-function Movie({ movie }) {
+function Movie({ movie, selectedId, onSelectMovie }) {
   return (
-    <li>
+    <li className={movie.imdbID === selectedId ? 'movie-selected' : null} onClick={() => onSelectMovie(movie.imdbID)}>
       <img
         src={movie.Poster === 'N/A' ? 'img/image-not-found.png' : movie.Poster}
         alt={`${movie.Title} poster`}
@@ -212,6 +228,80 @@ function Movie({ movie }) {
         </p>
       </div>
     </li>
+  )
+}
+
+function MovieDetails({ selectedId, onCloseMovie }) {
+  const [movie, setMovie] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot, Released: released, Actors: actors, Director: director, Genre: genre } = movie
+
+  const getMovieDetails = async function () {
+    try {
+      setIsLoading(true)
+      setError('')
+      const res = await fetch(`http://www.omdbapi.com/?i=${selectedId}&apikey=${KEY}`)
+      if (!res.ok) throw new Error('Something went wong when loading the movie')
+      const data = await res.json()
+      if (data?.Error) throw new Error(data.Error)
+      setMovie(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(function () {
+    getMovieDetails()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return error ? (
+    <ErrorMessage message={error} />
+  ) : isLoading ? (
+    <Loader />
+  ) : (
+    <div className="details">
+      <header>
+        <button className="btn-back" onClick={onCloseMovie}>
+          <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M244 400L100 256l144-144M120 256h292" />
+          </svg>
+        </button>
+        <img
+          src={poster}
+          alt={`Poster of ${title} movie`}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null // prevents looping
+            currentTarget.src = 'img/image-not-found.png'
+          }}
+        />
+        <div className="details-overview">
+          <h2>{title}</h2>
+          <p>
+            {released} &bull; {runtime}
+          </p>
+          <p>{genre}</p>
+          <p>
+            <span>⭐</span>
+            {imdbRating} IMDb rating
+          </p>
+        </div>
+      </header>
+      <section>
+        <div className="rating">
+          <StarRating onSetRating={() => {}} maxRating={10} size={24} />
+        </div>
+        <p>
+          <em>{plot}</em>
+        </p>
+        <p>Starring {actors}</p>
+        <p>Directed by {director}</p>
+      </section>
+    </div>
   )
 }
 
