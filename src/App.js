@@ -132,7 +132,7 @@ export default function App() {
         </Box>
         <Box>
           {selectedId ? (
-            <MovieDetails selectedId={selectedId} onCloseMovie={() => setSelectedId(null)} key={selectedId} />
+            <MovieDetails selectedId={selectedId} onCloseMovie={() => setSelectedId(null)} /> //key={selectedId}
           ) : (
             <>
               <WatchedSummary watched={watched} />
@@ -254,10 +254,14 @@ function MovieDetails({ selectedId, onCloseMovie }) {
     }
   }
 
-  useEffect(function () {
-    getMovieDetails()
+  useEffect(
+    function () {
+      getMovieDetails()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    [selectedId]
+  )
 
   return error ? (
     <ErrorMessage message={error} />
