@@ -167,9 +167,12 @@ body {
   transition: all 0.3s;
 }
 
-.list.list-movies li:hover,
-.list.list-movies li.movie-selected {
+.list.list-movies li:hover {
   background-color: var(--color-background-100);
+}
+
+.list.list-movies li.movie-selected {
+  background-color: var(--color-primary);
 }
 
 .list img {
@@ -207,6 +210,14 @@ body {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-delete svg {
+  width: 85%;
+  aspect-ratio: 1;
 }
 
 .btn-delete:hover {
@@ -250,7 +261,7 @@ body {
 }
 
 .details button {
-  width: 2.8rem;
+  //width: 2.8rem;
   height: 2.8rem;
   padding: 0.4rem;
   margin: 0.2rem 0 0 0.1rem;
@@ -304,7 +315,7 @@ body {
   font-weight: 600;
   display: flex;
   flex-direction: column;
-  gap: 2.4rem;
+  gap: 1.4rem;
 }
 
 .btn-add {
