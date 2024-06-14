@@ -81,12 +81,12 @@ export default function App() {
     setIsLoading(false)
   }
 
-  async function fetchMovies() {
+  async function fetchMovies(abort = null) {
     try {
       setIsLoading(true)
       setError('')
 
-      const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`)
+      const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`, { signal: abort?.signal })
 
       if (!res.ok) throw new Error('Something went wong with fetching movies')
 
@@ -95,8 +95,9 @@ export default function App() {
       if (data?.Error) throw new Error(data.Error)
 
       setMovies(data.Search)
+      setError('')
     } catch (err) {
-      setError(err.message)
+      if (err.name !== 'AbortError') setError(err.message)
     } finally {
       setIsLoading(false)
     }
@@ -107,13 +108,19 @@ export default function App() {
       Reset()
       return
     }
-    // throttle input onchange calls
-    const timeoutId = setTimeout(() => fetchMovies(), 500)
 
-    //fetchMovies() /* too many requests without delay */
+    const controller = new AbortController()
+
+    // throttle input onchange calls
+    //const timeoutId = setTimeout(() => fetchMovies(controller), 0.001)
+
+    fetchMovies(controller) /* too many requests without delay */
 
     // clear timeout on unmount
-    return () => clearTimeout(timeoutId)
+    return () => {
+      controller.abort()
+      //clearTimeout(timeoutId)
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
@@ -166,7 +173,7 @@ function ErrorMessage({ message }) {
 }
 
 function Search({ query, setQuery }) {
-  return <input className="search" type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} autoComplete />
+  return <input className="search" type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} autoComplete="section-search" />
 }
 
 function NavBar({ children }) {
@@ -273,6 +280,14 @@ function MovieDetails({ selectedId, onCloseMovie, watched, onAddWatched }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedId]
   )
+
+  useEffect(() => {
+    if (!title) return
+    document.title = `Movie | ${title}`
+    return () => {
+      document.title = 'usePopcorn'
+    }
+  }, [title])
 
   function handleAdd() {
     const newWatchedMovie = {
