@@ -97,6 +97,7 @@ export default function App() {
       setMovies(data.Search)
       setError('')
     } catch (err) {
+      console.log(err.name)
       if (err.name !== 'AbortError') setError(err.message)
     } finally {
       setIsLoading(false)
@@ -112,14 +113,14 @@ export default function App() {
     const controller = new AbortController()
 
     // throttle input onchange calls
-    //const timeoutId = setTimeout(() => fetchMovies(controller), 0.001)
+    const timeoutId = setTimeout(() => fetchMovies(controller), 500)
 
-    fetchMovies(controller) /* too many requests without delay */
+    //fetchMovies(controller) /* too many requests without delay */
 
     // clear timeout on unmount
     return () => {
       controller.abort()
-      //clearTimeout(timeoutId)
+      clearTimeout(timeoutId)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
