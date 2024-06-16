@@ -112,7 +112,10 @@ export default function App() {
     const controller = new AbortController()
 
     // throttle input onchange calls
-    const timeoutId = setTimeout(() => fetchMovies(controller), 200)
+    const timeoutId = setTimeout(() => {
+      handleCloseMovie()
+      fetchMovies(controller)
+    }, 200)
 
     //fetchMovies(controller) /* too many requests without delay */
 
@@ -133,6 +136,10 @@ export default function App() {
     setWatched(prev => prev.filter(watched => watched.imdbID !== id))
   }
 
+  function handleCloseMovie() {
+    setSelectedId(null)
+  }
+
   return (
     <>
       <NavBar>
@@ -147,7 +154,7 @@ export default function App() {
         </Box>
         <Box>
           {selectedId ? (
-            <MovieDetails watched={watched} selectedId={selectedId} onCloseMovie={() => setSelectedId(null)} onAddWatched={handleAddWatched} /> //key={selectedId}
+            <MovieDetails watched={watched} selectedId={selectedId} onCloseMovie={handleCloseMovie} onAddWatched={handleAddWatched} /> //key={selectedId}
           ) : watched.length > 0 ? (
             <>
               <WatchedSummary watched={watched} />
@@ -293,6 +300,23 @@ function MovieDetails({ selectedId, onCloseMovie, watched, onAddWatched }) {
     }
   }, [title])
 
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === 'Escape') {
+          onCloseMovie()
+        }
+      }
+
+      document.addEventListener('keydown', callback)
+
+      return () => {
+        document.removeEventListener('keydown', callback)
+      }
+    },
+    [onCloseMovie]
+  )
+
   function handleAdd() {
     const newWatchedMovie = {
       imdbID: selectedId,
@@ -330,7 +354,7 @@ function MovieDetails({ selectedId, onCloseMovie, watched, onAddWatched }) {
         <div className="details-overview">
           <h2>{title}</h2>
           <p>
-            {released} {!isNaN(runtime) ? `&bull; ${runtime}` : ''}
+            {released} {!isNaN(runtime?.split(' ').at(0)) && <>&bull; {runtime}</>}
           </p>
           <p>{genre}</p>
           <p>

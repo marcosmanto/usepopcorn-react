@@ -457,6 +457,9 @@ body {
     max-height: 22px;
     transform: translateY(2px);
   }
+  .info {
+    font-size: 1.4rem;
+  }
 }
 
 @media (max-width: 22em) {
