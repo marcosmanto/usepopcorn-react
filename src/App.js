@@ -97,7 +97,6 @@ export default function App() {
       setMovies(data.Search)
       setError('')
     } catch (err) {
-      console.log(err.name)
       if (err.name !== 'AbortError') setError(err.message)
     } finally {
       setIsLoading(false)
@@ -113,11 +112,11 @@ export default function App() {
     const controller = new AbortController()
 
     // throttle input onchange calls
-    const timeoutId = setTimeout(() => fetchMovies(controller), 500)
+    const timeoutId = setTimeout(() => fetchMovies(controller), 200)
 
     //fetchMovies(controller) /* too many requests without delay */
 
-    // clear timeout on unmount
+    // clear timeout on unmount => this is a cleaning up function: clear side effects and memory leaking
     return () => {
       controller.abort()
       clearTimeout(timeoutId)
@@ -149,11 +148,15 @@ export default function App() {
         <Box>
           {selectedId ? (
             <MovieDetails watched={watched} selectedId={selectedId} onCloseMovie={() => setSelectedId(null)} onAddWatched={handleAddWatched} /> //key={selectedId}
-          ) : (
+          ) : watched.length > 0 ? (
             <>
               <WatchedSummary watched={watched} />
               <WatchedMovieList watched={watched} onDeleteWatched={handleDeleteWatched} />
             </>
+          ) : (
+            <p className="info">
+              <span>🎬</span> Add watched movies to your playlist
+            </p>
           )}
         </Box>
       </Main>
