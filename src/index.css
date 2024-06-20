@@ -42,7 +42,7 @@ body {
 
 .main {
   margin-top: 2.4rem;
-  height: calc(100vh - 7.2rem - 3 * 2.4rem);
+  height: calc(100dvh - 7.2rem - 3 * 2.4rem);
   display: flex;
   gap: 2.4rem;
   justify-content: center;
@@ -378,6 +378,10 @@ body {
   justify-content: center;
 }
 
+.open-watch-list-label {
+  display: none;
+}
+
 @media (max-width: 51.875em) {
   html {
     font-size: 56.25%;
@@ -403,7 +407,7 @@ body {
   #root {
     display: grid;
     grid-template-rows: 11.5rem 1fr;
-    height: calc(100vh - 2.4rem);
+    height: calc(100dvh - 2.4rem);
     row-gap: 1.2rem;
   }
   body {
@@ -417,10 +421,26 @@ body {
     justify-content: stretch;
     row-gap: 1.2rem;
   }
+  .main.close-list {
+    grid-template-rows: 1fr 10dvh;
+  }
+  .main.close-list .box:first-child {
+    max-height: calc(90dvh - 2.6rem * 2 - 11.5rem);
+  }
   .box {
+    position: relative;
     width: 100%;
     max-width: unset;
-    max-height: calc(50vh - 2.6rem - 11.5rem / 2);
+    max-height: calc(50dvh - 2.6rem - 11.5rem / 2);
+  }
+  .main.close-list .box:last-child .open-watch-list-label {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    cursor: pointer;
+  }
+  .main.close-list .box:last-child .open-watch-list-label svg {
+    width: 1.8rem;
   }
   .nav-bar {
     height: unset;
