@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import StarRating from './StarRating'
 
 const average = arr => arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
@@ -51,7 +51,7 @@ export default function App() {
       setIsLoading(true)
       setError('')
 
-      const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`, { signal: abort?.signal })
+      const res = await fetch(`http://www.omdbapi.com/?s=${query?.trim()}&apikey=${KEY}`, { signal: abort?.signal })
 
       if (!res.ok) throw new Error('Something went wong with fetching movies')
 
@@ -149,7 +149,24 @@ function ErrorMessage({ message }) {
 }
 
 function Search({ query, setQuery }) {
-  return <input className="search" type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} autoComplete="section-search" />
+  const inputEl = useRef(null)
+  useEffect(
+    function () {
+      function callback(e) {
+        if (document.activeElement === inputEl.current) return
+        if (e.code === 'Enter') {
+          inputEl.current.focus()
+          setQuery('')
+        }
+      }
+      document.addEventListener('keydown', callback)
+      inputEl.current.focus()
+
+      return () => document.removeEventListener('keydown', callback)
+    },
+    [setQuery]
+  )
+  return <input className="search" ref={inputEl} type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} autoComplete="section-search" />
 }
 
 function NavBar({ children }) {
