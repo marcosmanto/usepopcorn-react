@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import StarRating from './StarRating'
+import { useMovies } from './useMovies'
 
 const average = arr => arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
 
 const KEY = 'bb268ed2'
 
 export default function App() {
-  const [movies, setMovies] = useState([])
   const [watched, setWatched] = useState(function () {
     const storedValue = localStorage.getItem('watched')
     return JSON.parse(storedValue) ?? []
   })
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
+
+  const { movies, isLoading, error } = useMovies(query, handleCloseMovie)
 
   function renderMovieList() {
     if (isLoading) {
@@ -36,62 +36,9 @@ export default function App() {
     )
   }
 
-  function Reset() {
-    setMovies([])
-    setError('')
-    setIsLoading(false)
-  }
-
   useEffect(() => {
     localStorage.setItem('watched', JSON.stringify(watched))
   }, [watched])
-
-  async function fetchMovies(abort = null) {
-    try {
-      setIsLoading(true)
-      setError('')
-
-      const res = await fetch(`http://www.omdbapi.com/?s=${query?.trim()}&apikey=${KEY}`, { signal: abort?.signal })
-
-      if (!res.ok) throw new Error('Something went wong with fetching movies')
-
-      const data = await res.json()
-
-      if (data?.Error) throw new Error(data.Error)
-
-      setMovies(data.Search)
-      setError('')
-    } catch (err) {
-      if (err.name !== 'AbortError') setError(err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (query.length < 3) {
-      Reset()
-      return
-    }
-
-    const controller = new AbortController()
-
-    // throttle input onchange calls
-    const timeoutId = setTimeout(() => {
-      handleCloseMovie()
-      fetchMovies(controller)
-    }, 200)
-
-    //fetchMovies(controller) /* too many requests without delay */
-
-    // clear timeout on unmount => this is a cleaning up function: clear side effects and memory leaking
-    return () => {
-      controller.abort()
-      clearTimeout(timeoutId)
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
 
   function handleAddWatched(movie) {
     setWatched(prev => [...prev, movie])
