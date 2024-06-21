@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import StarRating from './StarRating'
 import { useMovies } from './useMovies'
 import { useLocalStorageState } from './useLocalStorageState'
+import { useKey } from './useKey'
 
 const average = arr => arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
 
@@ -94,22 +95,20 @@ function ErrorMessage({ message }) {
 
 function Search({ query, setQuery }) {
   const inputEl = useRef(null)
-  useEffect(
-    function () {
-      function callback(e) {
-        if (document.activeElement === inputEl.current) return
-        if (e.code === 'Enter') {
-          inputEl.current.focus()
-          setQuery('')
-        }
-      }
-      document.addEventListener('keydown', callback)
-      inputEl.current.focus()
 
-      return () => document.removeEventListener('keydown', callback)
-    },
-    [setQuery]
-  )
+  useEffect(searchFocus, [setQuery])
+
+  useKey({
+    key: 'Enter',
+    action: searchFocus
+  })
+
+  function searchFocus() {
+    if (document.activeElement === inputEl.current) return
+    inputEl.current.focus()
+    setQuery('')
+  }
+
   return <input className="search" ref={inputEl} type="text" placeholder="Search movies..." value={query} onChange={e => setQuery(e.target.value)} autoComplete="section-search" />
 }
 
@@ -249,22 +248,7 @@ function MovieDetails({ selectedId, onCloseMovie, watched, onAddWatched }) {
     }
   }, [title])
 
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === 'Escape') {
-          onCloseMovie()
-        }
-      }
-
-      document.addEventListener('keydown', callback)
-
-      return () => {
-        document.removeEventListener('keydown', callback)
-      }
-    },
-    [onCloseMovie]
-  )
+  useKey({ action: onCloseMovie })
 
   function handleAdd() {
     const newWatchedMovie = {
