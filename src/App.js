@@ -341,9 +341,11 @@ function WatchedMovieList({ watched, onDeleteWatched, onSelectMovie }) {
 
 function WatchedMovie({ movie, onDeleteWatched, onSelectMovie }) {
   return (
-    <li style={{ cursor: 'pointer' }} onClick={() => onSelectMovie(movie.imdbID)}>
-      <img src={movie.poster} alt={`${movie.title} poster`} />
-      <h3>{movie.title}</h3>
+    <li>
+      <img style={{ cursor: 'pointer' }} onClick={() => onSelectMovie(movie.imdbID)} src={movie.poster} alt={`${movie.title} poster`} />
+      <h3 style={{ cursor: 'pointer' }} onClick={() => onSelectMovie(movie.imdbID)}>
+        {movie.title}
+      </h3>
       <div>
         <p>
           <span>⭐️</span>
