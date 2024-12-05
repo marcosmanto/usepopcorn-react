@@ -31,11 +31,16 @@ export default function App() {
       <MovieList
         movies={movies}
         selectedId={selectedId}
-        onSelectMovie={id => {
-          setSelectedId(prev => (id === prev ? null : id))
-        }}
+        // onSelectMovie={id => {
+        //   setSelectedId(prev => (id === prev ? null : id))
+        // }}
+        onSelectMovie={handleSelectMovie}
       />
     )
+  }
+
+  function handleSelectMovie(movieId) {
+    setSelectedId(prevId => (movieId === prevId ? null : movieId))
   }
 
   function handleAddWatched(movie) {
@@ -68,7 +73,7 @@ export default function App() {
           ) : watched.length > 0 ? (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} onDeleteWatched={handleDeleteWatched} />
+              <WatchedMovieList watched={watched} onDeleteWatched={handleDeleteWatched} onSelectMovie={handleSelectMovie} />
             </>
           ) : (
             <p className="info">
@@ -324,19 +329,19 @@ function MovieDetails({ selectedId, onCloseMovie, watched, onAddWatched }) {
   )
 }
 
-function WatchedMovieList({ watched, onDeleteWatched }) {
+function WatchedMovieList({ watched, onDeleteWatched, onSelectMovie }) {
   return (
     <ul className="list">
       {watched.map(movie => (
-        <WatchedMovie movie={movie} key={movie.imdbID} onDeleteWatched={onDeleteWatched} />
+        <WatchedMovie movie={movie} key={movie.imdbID} onDeleteWatched={onDeleteWatched} onSelectMovie={onSelectMovie} />
       ))}
     </ul>
   )
 }
 
-function WatchedMovie({ movie, onDeleteWatched }) {
+function WatchedMovie({ movie, onDeleteWatched, onSelectMovie }) {
   return (
-    <li>
+    <li style={{ cursor: 'pointer' }} onClick={() => onSelectMovie(movie.imdbID)}>
       <img src={movie.poster} alt={`${movie.title} poster`} />
       <h3>{movie.title}</h3>
       <div>
